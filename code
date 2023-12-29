@@ -1,0 +1,58 @@
+clc
+clear 
+close all
+T = 12e-3;                     % Sampling period
+Fs = 1/T;                      % Sampling frequency
+L = 1000;                      % Length of signal
+[inSig, t] = wave_signal(); %triangle wave from hw 3 
+f = 2*pi*Fs;
+
+% DSB
+
+dsb0 = inSig;
+fc = 5000;  
+dsb1 = dsb0.*cos(2*pi*fc*t);  
+dbsdemod = (dsb1.*cos(2*pi*fc*t));
+a = fir1(90,0.01);
+b = 1;
+dsb3 = (filter(a,b,dbsdemod)); 
+ 
+X = [dsb0; dsb1; dsb3];
+
+ n = 2^nextpow2(L);
+dim = 2;
+Y = fft(X,n,dim);
+P2 = abs(Y/n);
+P1 = P2(:,1:n/2+1);
+P1(:,2:end-1) = 2*P1(:,2:end-1);
+
+
+figure(1);
+subplot(3,2,1); 
+plot(t(1:end),dsb0(1:end))
+grid;
+title('Input Signal')
+subplot(3,2,3); 
+grid;
+plot(t(1:end),dsb1(1:end))
+title('Modulated Signal')
+grid
+subplot(3,2,5);
+plot(t(1:end),dsb3(1:end))
+title('Demodulated Signal')
+grid
+
+
+
+subplot(3,2,2); 
+plot(0:(Fs/n):(Fs/2-Fs/n),P1(1,1:n/2))
+title('Frequency Spectrum of Input Signal')
+grid
+subplot(3,2,4); 
+stem(0:(Fs/n):(Fs/2-Fs/n),P1(2,1:n/2))
+title('Frequency Spectrum of Modulated Signal')
+grid
+subplot(3,2,6); 
+plot(0:(Fs/n):(Fs/2-Fs/n),P1(3,1:n/2))
+title('Frequency Spectrum of Demodulated Signal')
+grid
